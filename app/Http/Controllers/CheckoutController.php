@@ -15,31 +15,26 @@ class CheckoutController extends Controller
 
     public function index()
     {
-        // Vérifier si le panier existe dans la session
-        $cart = session('cart');
+        $cart = session()->get('cart', []);
         
-        // Si le panier n'existe pas ou est vide, rediriger vers le panier
-        if (!$cart) {
-            return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
+        // Si le panier est vide, rediriger vers la page panier vide
+        if (empty($cart)) {
+            return redirect()->route('cart.index');
         }
 
-        // Calculer le total
         $total = collect($cart)->sum(function($item) {
             return $item['price'] * $item['quantity'];
         });
 
-        return view('checkout.index', [
-            'cart' => $cart,
-            'total' => $total
-        ]);
+        return view('checkout.index', compact('cart', 'total'));
     }
 
     public function store(Request $request)
     {
-        $cart = session('cart');
+        $cart = session()->get('cart', []);
         
-        if (!$cart) {
-            return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
+        if (empty($cart)) {
+            return redirect()->route('cart.empty');
         }
 
         // Validation des données
@@ -125,5 +120,14 @@ class CheckoutController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', 'Erreur lors du paiement : ' . $e->getMessage());
         }
+    }
+
+    public function confirmation(Order $order)
+    {
+        if ($order->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        return view('checkout.confirmation', compact('order'));
     }
 }

@@ -52,10 +52,10 @@ Route::get('/categories/{category:slug}', [CategoryController::class, 'show'])->
 
 // Routes du panier
 Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/{product}', [CartController::class, 'add'])->name('cart.add');
-Route::put('/cart/{product}', [CartController::class, 'update'])->name('cart.update');
-Route::delete('/cart/{product}', [CartController::class, 'remove'])->name('cart.remove');
-Route::get('/cart/empty', [CartController::class, 'empty'])->name('cart.empty');
+Route::post('/cart/add/{product}', [CartController::class, 'add'])->name('cart.add');
+Route::put('/cart/update/{product}', [CartController::class, 'update'])->name('cart.update');
+Route::delete('/cart/remove/{product}', [CartController::class, 'remove'])->name('cart.remove');
+Route::get('/empty-cart', [CartController::class, 'empty'])->name('cart.empty');
 
 // Routes protégées par authentification
 Route::middleware(['auth'])->group(function () {
@@ -76,6 +76,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{order}/track', [OrderController::class, 'track'])->name('orders.track');
     Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
+    // Checkout
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
 
     // Routes du compte utilisateur
     Route::prefix('account')->name('account.')->group(function () {
@@ -161,15 +166,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/coupons/{coupon}/active', [AdminCouponController::class, 'updateActive'])->name('coupons.active');
     Route::get('/coupons/generate-code', [AdminCouponController::class, 'generateCode'])->name('coupons.generate-code');
     Route::get('/coupons/{coupon}/usage', [AdminCouponController::class, 'usageHistory'])->name('coupons.usage');
-});
-
-// Routes checkout
-Route::middleware('check')->group(function () {
-    // Checkout
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::get('/checkout/payment/{order}', [CheckoutController::class, 'payment'])->name('checkout.payment');
-    Route::post('/checkout/process-payment/{order}', [CheckoutController::class, 'processPayment'])->name('checkout.process-payment');
 });
 
 // Routes d'erreur

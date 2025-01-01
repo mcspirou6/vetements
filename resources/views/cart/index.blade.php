@@ -8,7 +8,7 @@
         $cart = session()->get('cart', []);
     @endphp
 
-    @if(empty($cart))
+    @if(!$cart || count($cart) === 0)
         <div class="alert alert-info">
             Votre panier est vide.
             <a href="{{ route('home') }}" class="alert-link">Continuer mes achats</a>
