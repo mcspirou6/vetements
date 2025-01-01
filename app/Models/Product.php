@@ -20,6 +20,7 @@ class Product extends Model
         'sizes',
         'colors',
         'images',
+        'main_image',
         'is_featured',
         'is_active',
         'category_id'
@@ -31,8 +32,8 @@ class Product extends Model
         'images' => 'array',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
-        'price' => 'float',
-        'sale_price' => 'float',
+        'price' => 'decimal:2',
+        'sale_price' => 'decimal:2',
         'quantity' => 'integer'
     ];
 
