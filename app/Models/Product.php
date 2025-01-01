@@ -32,8 +32,8 @@ class Product extends Model
         'images' => 'array',
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
-        'price' => 'decimal:2',
-        'sale_price' => 'decimal:2',
+        'price' => 'float',
+        'sale_price' => 'float',
         'quantity' => 'integer'
     ];
 

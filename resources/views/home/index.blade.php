@@ -47,13 +47,11 @@
                         <!-- Images Container -->
                         <div class="relative overflow-hidden rounded-lg mb-3">
                             <div class="product-images relative h-64">
-                                @if(is_array($product->images) && count($product->images) > 0)
-                                    @foreach($product->images as $index => $image)
-                                        <img src="{{ asset('storage/' . $image) }}" 
-                                             alt="{{ $product->name }}"
-                                             class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 {{ $index === 0 ? 'opacity-100' : 'opacity-0' }}"
-                                             data-index="{{ $index }}">
-                                    @endforeach
+                                @if($product->main_image)
+                                    <img src="{{ asset('storage/' . $product->main_image) }}" 
+                                         alt="{{ $product->name }}"
+                                         class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 opacity-100"
+                                         data-index="0">
                                 @else
                                     <img src="{{ asset('images/placeholder.jpg') }}" 
                                          alt="{{ $product->name }}"

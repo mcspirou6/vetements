@@ -124,7 +124,7 @@
                                 <div class="mb-2">
                                     <img src="{{ asset('storage/' . $product->main_image) }}" 
                                          alt="Image principale actuelle"
-                                         class="img-thumbnail" style="max-height: 100px;">
+                                         class="img-thumbnail" style="max-height: 150px; border-radius: 10px;">
                                 </div>
                             @endif
                             <input type="file" class="form-control @error('main_image') is-invalid @enderror" 

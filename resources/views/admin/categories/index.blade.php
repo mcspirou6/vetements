@@ -84,7 +84,7 @@
                                        title="Modifier">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="{{ route('shop.category', $category) }}" 
+                                    <a href="{{ route('categories.show', $category->slug) }}" 
                                        class="btn btn-sm btn-outline-primary"
                                        data-bs-toggle="tooltip"
                                        title="Voir en boutique"

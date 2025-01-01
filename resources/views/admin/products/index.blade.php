@@ -32,13 +32,17 @@
                     <tbody>
                         @foreach($products as $product)
                         <tr>
-                            <td class="align-middle">
-                                @if($product->images && is_array($product->images) && count($product->images) > 0)
-                                    <img src="{{ asset('storage/' . $product->images[0]) }}" alt="{{ $product->name }}" class="img-thumbnail" style="max-width: 100px;">
-                                @elseif($product->image)
-                                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="img-thumbnail" style="max-width: 100px;">
+                            <td>
+                                @if($product->main_image)
+                                    <img src="{{ asset('storage/' . $product->main_image) }}" 
+                                         alt="{{ $product->name }}" 
+                                         class="img-thumbnail"
+                                         style="max-width: 80px; height: auto;">
                                 @else
-                                    <span class="text-muted">Aucune image</span>
+                                    <img src="{{ asset('images/no-image.png') }}" 
+                                         alt="No image" 
+                                         class="img-thumbnail"
+                                         style="max-width: 80px; height: auto;">
                                 @endif
                             </td>
                             <td>

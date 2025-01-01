@@ -28,14 +28,10 @@
                 <div class="card h-100 product-card">
                     <!-- Images du produit -->
                     <div class="position-relative product-images" style="height: 280px;">
-                        @if(is_array($product->images) && count($product->images) > 0)
-                            @foreach($product->images as $index => $image)
-                                <img src="{{ asset('storage/' . $image) }}" 
-                                     alt="{{ $product->name }}"
-                                     class="card-img-top position-absolute w-100 h-100 object-fit-cover transition-opacity 
-                                            {{ $index === 0 ? 'opacity-100' : 'opacity-0' }}"
-                                     data-index="{{ $index }}">
-                            @endforeach
+                        @if($product->main_image)
+                            <img src="{{ asset('storage/' . $product->main_image) }}" 
+                                 alt="{{ $product->name }}"
+                                 class="card-img-top position-absolute w-100 h-100 object-fit-cover transition-opacity opacity-100">
                         @else
                             <img src="{{ asset('images/placeholder.jpg') }}" 
                                  class="card-img-top h-100 w-100 object-fit-cover"
