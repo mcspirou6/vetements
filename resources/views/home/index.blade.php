@@ -42,33 +42,64 @@
         <div class="container mx-auto px-6">
             <h2 class="text-3xl font-bold text-center mb-12">Produits populaires</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                @foreach(\App\Models\Product::where('featured', true)->take(8)->get() as $product)
-                    <div class="group">
+                @foreach(\App\Models\Product::where('is_featured', true)->take(8)->get() as $product)
+                    <div class="group relative">
+                        <!-- Images Container -->
                         <div class="relative overflow-hidden rounded-lg mb-3">
-                            <img src="{{ $product->image_url }}" alt="{{ $product->name }}" 
-                                 class="w-full h-64 object-cover transform group-hover:scale-105 transition-transform duration-300">
-                            <!-- Quick view button -->
-                            <button onclick="quickView('{{ $product->id }}')" 
-                                    class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <span class="bg-white text-gray-900 px-4 py-2 rounded-lg">Aperçu rapide</span>
-                            </button>
-                            <!-- Wishlist button -->
-                            @auth
-                                <button onclick="toggleWishlist('{{ $product->id }}')"
-                                        class="absolute top-2 right-2 p-2 rounded-full bg-white shadow-md hover:bg-gray-100">
-                                    <svg class="w-6 h-6 {{ auth()->user()->wishlists->contains('product_id', $product->id) ? 'text-red-500' : 'text-gray-400' }}"
-                                         fill="currentColor" viewBox="0 0 24 24">
-                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                                    </svg>
-                                </button>
-                            @endauth
+                            <div class="product-images relative h-64">
+                                @if(is_array($product->images) && count($product->images) > 0)
+                                    @foreach($product->images as $index => $image)
+                                        <img src="{{ asset('storage/' . $image) }}" 
+                                             alt="{{ $product->name }}"
+                                             class="absolute inset-0 w-full h-full object-cover transition-opacity duration-300 {{ $index === 0 ? 'opacity-100' : 'opacity-0' }}"
+                                             data-index="{{ $index }}">
+                                    @endforeach
+                                @else
+                                    <img src="{{ asset('images/placeholder.jpg') }}" 
+                                         alt="{{ $product->name }}"
+                                         class="w-full h-full object-cover">
+                                @endif
+                            </div>
+
+                            <!-- Badges -->
+                            @if($product->sale_price)
+                                <div class="absolute top-2 right-2">
+                                    <span class="bg-red-600 text-white px-2 py-1 rounded-md text-sm">
+                                        -{{ $product->discount_percentage }}%
+                                    </span>
+                                </div>
+                            @endif
+
+                            <!-- Quick View Overlay -->
+                            <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                <div class="space-x-2">
+                                    <button onclick="quickView({{ $product->id }})" 
+                                            class="bg-white text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-eye mr-2"></i>Aperçu rapide
+                                    </button>
+                                    <a href="{{ route('products.show', $product) }}" 
+                                       class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors">
+                                        <i class="fas fa-plus mr-2"></i>Voir plus
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                        <h3 class="font-semibold text-lg mb-1">{{ $product->name }}</h3>
-                        <p class="text-gray-600 mb-2">{{ $product->price_formatted }}</p>
-                        <button onclick="addToCart('{{ $product->id }}')"
-                                class="w-full bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
-                            Ajouter au panier
-                        </button>
+
+                        <!-- Product Info -->
+                        <h3 class="text-lg font-semibold mb-2">{{ $product->name }}</h3>
+                        <div class="flex items-center justify-between mb-2">
+                            <div>
+                                @if($product->sale_price)
+                                    <span class="font-bold text-red-600">{{ number_format($product->sale_price, 2, ',', ' ') }} €</span>
+                                    <span class="text-gray-500 line-through text-sm ml-2">{{ number_format($product->price, 2, ',', ' ') }} €</span>
+                                @else
+                                    <span class="font-bold">{{ number_format($product->price, 2, ',', ' ') }} €</span>
+                                @endif
+                            </div>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-3">
+                            {{ Str::limit($product->description, 100) }}
+                        </p>
                     </div>
                 @endforeach
             </div>
@@ -132,51 +163,116 @@
     </section>
 @endsection
 
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+<style>
+.product-images-slider .slick-prev,
+.product-images-slider .slick-next {
+    z-index: 1;
+}
+.product-images-slider .slick-prev {
+    left: 10px;
+}
+.product-images-slider .slick-next {
+    right: 10px;
+}
+.product-images img {
+    transition: opacity 0.3s ease-in-out;
+}
+</style>
+@endpush
+
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
 <script>
-    function quickView(productId) {
-        // Implémenter la logique de vue rapide
-    }
+$(document).ready(function(){
+    $('.product-images-slider').slick({
+        dots: true,
+        infinite: true,
+        speed: 500,
+        fade: true,
+        cssEase: 'linear',
+        autoplay: true,
+        autoplaySpeed: 3000
+    });
+});
 
-    function toggleWishlist(productId) {
-        fetch(`/wishlist/add/${productId}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Mettre à jour l'interface
-                const button = event.currentTarget.querySelector('svg');
-                button.classList.toggle('text-red-500');
-                button.classList.toggle('text-gray-400');
-            }
-        });
-    }
+function quickView(productId) {
+    // Implémenter la logique de vue rapide
+}
 
-    function addToCart(productId) {
-        fetch(`/cart/add/${productId}`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
+function toggleWishlist(productId) {
+    fetch(`/wishlist/add/${productId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mettre à jour l'interface
+            const button = event.currentTarget.querySelector('svg');
+            button.classList.toggle('text-red-500');
+            button.classList.toggle('text-gray-400');
+        }
+    });
+}
+
+function addToCart(productId) {
+    fetch(`/cart/add/${productId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mettre à jour le compteur du panier
+            const cartCount = document.querySelector('#cart-count');
+            if (cartCount) {
+                cartCount.textContent = data.cartCount;
             }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Mettre à jour le compteur du panier
-                const cartCount = document.querySelector('#cart-count');
-                if (cartCount) {
-                    cartCount.textContent = data.cartCount;
-                }
-                // Afficher une notification
-                alert('Produit ajouté au panier');
-            }
+            // Afficher une notification
+            alert('Produit ajouté au panier');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const productCards = document.querySelectorAll('.group');
+    
+    productCards.forEach(card => {
+        const images = card.querySelectorAll('.product-images img');
+        if (images.length <= 1) return;
+        
+        let currentIndex = 0;
+        let interval;
+        
+        const showImage = (index) => {
+            images.forEach(img => img.classList.add('opacity-0'));
+            images[index].classList.remove('opacity-0');
+        };
+        
+        const nextImage = () => {
+            currentIndex = (currentIndex + 1) % images.length;
+            showImage(currentIndex);
+        };
+        
+        card.addEventListener('mouseenter', () => {
+            interval = setInterval(nextImage, 1000); // Change image every second
         });
-    }
+        
+        card.addEventListener('mouseleave', () => {
+            clearInterval(interval);
+            currentIndex = 0;
+            showImage(0);
+        });
+    });
+});
 </script>
 @endpush

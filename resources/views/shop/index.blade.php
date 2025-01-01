@@ -11,17 +11,19 @@
                 <div class="card-body">
                     <h5 class="card-title mb-4">Filtres</h5>
                     
-                    <form action="{{ route('shop') }}" method="GET">
+                    <form action="{{ route('shop') }}" method="GET" id="filter-form">
                         <!-- Catégories -->
                         <div class="mb-4">
                             <h6 class="mb-3">Catégories</h6>
                             @foreach($categories as $category)
                                 <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" name="categories[]" 
-                                           value="{{ $category->id }}" id="category{{ $category->id }}"
+                                    <input class="form-check-input filter-input" type="checkbox" 
+                                           name="categories[]" value="{{ $category->id }}"
+                                           id="category{{ $category->id }}"
                                            {{ in_array($category->id, request('categories', [])) ? 'checked' : '' }}>
                                     <label class="form-check-label" for="category{{ $category->id }}">
                                         {{ $category->name }}
+                                        <span class="text-muted">({{ $category->products_count }})</span>
                                     </label>
                                 </div>
                             @endforeach
@@ -32,12 +34,14 @@
                             <h6 class="mb-3">Prix</h6>
                             <div class="row g-2">
                                 <div class="col-6">
-                                    <input type="number" class="form-control" name="min_price" 
-                                           placeholder="Min" value="{{ request('min_price') }}">
+                                    <input type="number" class="form-control filter-input" 
+                                           name="min_price" placeholder="Min €" 
+                                           value="{{ request('min_price') }}">
                                 </div>
                                 <div class="col-6">
-                                    <input type="number" class="form-control" name="max_price" 
-                                           placeholder="Max" value="{{ request('max_price') }}">
+                                    <input type="number" class="form-control filter-input" 
+                                           name="max_price" placeholder="Max €" 
+                                           value="{{ request('max_price') }}">
                                 </div>
                             </div>
                         </div>
@@ -45,7 +49,7 @@
                         <!-- Tri -->
                         <div class="mb-4">
                             <h6 class="mb-3">Trier par</h6>
-                            <select class="form-select" name="sort">
+                            <select class="form-select filter-input" name="sort">
                                 <option value="newest" {{ request('sort') == 'newest' ? 'selected' : '' }}>Plus récent</option>
                                 <option value="price_asc" {{ request('sort') == 'price_asc' ? 'selected' : '' }}>Prix croissant</option>
                                 <option value="price_desc" {{ request('sort') == 'price_desc' ? 'selected' : '' }}>Prix décroissant</option>
@@ -54,11 +58,7 @@
                             </select>
                         </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter me-2"></i> Appliquer les filtres
-                            </button>
-                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Appliquer les filtres</button>
                     </form>
                 </div>
             </div>
@@ -72,54 +72,66 @@
                     <h1 class="h3 mb-0">Nos produits</h1>
                     <p class="text-muted mb-0">{{ $products->total() }} produits trouvés</p>
                 </div>
-                <div class="d-flex gap-2">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary active">
-                            <i class="fas fa-th-large"></i>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary">
-                            <i class="fas fa-list"></i>
-                        </button>
-                    </div>
-                </div>
             </div>
 
-            <!-- Liste des produits -->
-            <div class="row g-4">
-                @forelse($products as $product)
-                    <div class="col-md-4">
-                        <div class="card h-100 product-card">
-                            <img src="{{ $product->image_url }}" class="card-img-top" alt="{{ $product->name }}">
-                            
-                            <div class="card-body d-flex flex-column">
-                                <h5 class="card-title mb-2">{{ $product->name }}</h5>
-                                <p class="text-muted mb-2">{{ $product->category->name }}</p>
-                                <div class="d-flex justify-content-between align-items-center mt-auto">
-                                    <span class="product-price">{{ number_format($product->price, 2, ',', ' ') }} €</span>
-                                    <form action="{{ route('cart.add', $product) }}" method="POST">
-                                        @csrf
-                                        <button type="submit" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-shopping-cart me-1"></i> Ajouter
-                                        </button>
-                                    </form>
+            @if($products->isEmpty())
+                <div class="alert alert-info">
+                    Aucun produit ne correspond à vos critères.
+                </div>
+            @else
+                <div class="row g-4">
+                    @foreach($products as $product)
+                        <div class="col-md-4">
+                            <div class="card h-100 shadow-sm product-card">
+                                @if($product->image)
+                                    <img src="{{ asset('storage/' . $product->image) }}" 
+                                         class="card-img-top" alt="{{ $product->name }}"
+                                         style="height: 200px; object-fit: cover;">
+                                @endif
+                                <div class="card-body">
+                                    <h5 class="card-title mb-1">
+                                        <a href="{{ route('products.show', $product) }}" 
+                                           class="text-dark text-decoration-none">
+                                            {{ $product->name }}
+                                        </a>
+                                    </h5>
+                                    <p class="text-muted small mb-2">
+                                        {{ $product->category->name }}
+                                    </p>
+                                    <p class="card-text mb-3">
+                                        {{ Str::limit($product->description, 100) }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="h5 mb-0">{{ number_format($product->price, 2, ',', ' ') }} €</span>
+                                        <form action="{{ route('cart.add', $product) }}" method="POST">
+                                            @csrf
+                                            <button type="submit" class="btn btn-outline-primary">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                @empty
-                    <div class="col-12">
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i> Aucun produit trouvé
-                        </div>
-                    </div>
-                @endforelse
-            </div>
+                    @endforeach
+                </div>
 
-            <!-- Pagination -->
-            <div class="d-flex justify-content-center mt-4">
-                {{ $products->links() }}
-            </div>
+                <div class="mt-4">
+                    {{ $products->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+    // Auto-submit form when filters change
+    document.querySelectorAll('.filter-input').forEach(input => {
+        input.addEventListener('change', () => {
+            document.getElementById('filter-form').submit();
+        });
+    });
+</script>
+@endpush
 @endsection

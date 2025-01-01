@@ -9,7 +9,14 @@ class CartController extends Controller
 {
     public function index()
     {
-        return view('cart.index');
+        $cart = session('cart', []);
+        $total = 0;
+        
+        foreach($cart as $item) {
+            $total += $item['price'] * $item['quantity'];
+        }
+        
+        return view('cart.index', compact('cart', 'total'));
     }
 
     public function add(Request $request, Product $product)
@@ -18,7 +25,7 @@ class CartController extends Controller
             return back()->with('error', 'Ce produit est en rupture de stock.');
         }
 
-        $cart = session()->get('cart', []);
+        $cart = session('cart', []);
         
         if (isset($cart[$product->id])) {
             if ($cart[$product->id]['quantity'] + 1 > $product->quantity) {
@@ -30,11 +37,12 @@ class CartController extends Controller
                 'name' => $product->name,
                 'quantity' => 1,
                 'price' => $product->sale_price ?? $product->price,
-                'image' => $product->images[0] ?? null
+                'image' => $product->image // Utilisation de l'accesseur image
             ];
         }
-
-        session()->put('cart', $cart);
+        
+        session(['cart' => $cart]);
+        
         return back()->with('success', 'Produit ajouté au panier !');
     }
 
@@ -48,25 +56,25 @@ class CartController extends Controller
             return back()->with('error', 'Stock insuffisant.');
         }
 
-        $cart = session()->get('cart', []);
+        $cart = session('cart', []);
         
         if (isset($cart[$product->id])) {
             $cart[$product->id]['quantity'] = $request->quantity;
-            session()->put('cart', $cart);
+            session(['cart' => $cart]);
         }
-
+        
         return back()->with('success', 'Panier mis à jour !');
     }
 
     public function remove(Product $product)
     {
-        $cart = session()->get('cart', []);
+        $cart = session('cart', []);
         
         if (isset($cart[$product->id])) {
             unset($cart[$product->id]);
-            session()->put('cart', $cart);
+            session(['cart' => $cart]);
         }
-
+        
         return back()->with('success', 'Produit retiré du panier !');
     }
 }

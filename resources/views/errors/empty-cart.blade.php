@@ -20,7 +20,7 @@
                         @endif
                     </p>
                     <div class="d-flex justify-content-center gap-3">
-                        <a href="{{ route('shop.index') }}" class="btn btn-primary">
+                        <a href="{{ route('shop') }}" class="btn btn-primary">
                             <i class="fas fa-shopping-bag me-2"></i>Continuer mes achats
                         </a>
                         <a href="{{ route('cart.index') }}" class="btn btn-outline-primary">

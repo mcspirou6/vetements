@@ -169,15 +169,19 @@
                     <div class="mb-3">
                         <label class="form-label">Tailles Disponibles</label>
                         <div class="row g-2">
-                            @foreach(['XS', 'S', 'M', 'L', 'XL', 'XXL'] as $size)
-                                <div class="col-4">
+                            @php
+                                $availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+                                $productSizes = is_array($product->sizes) ? $product->sizes : [];
+                            @endphp
+                            @foreach($availableSizes as $size)
+                                <div class="col-auto">
                                     <div class="form-check">
                                         <input type="checkbox" 
                                                class="form-check-input" 
                                                id="size_{{ $size }}" 
                                                name="sizes[]" 
                                                value="{{ $size }}"
-                                               {{ in_array($size, old('sizes', $product->sizes ?? [])) ? 'checked' : '' }}>
+                                               {{ in_array($size, old('sizes', $productSizes)) ? 'checked' : '' }}>
                                         <label class="form-check-label" for="size_{{ $size }}">
                                             {{ $size }}
                                         </label>

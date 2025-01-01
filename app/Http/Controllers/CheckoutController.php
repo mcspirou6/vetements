@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Order;
-use App\Models\Coupon;
+use App\Models\Product;
 
 class CheckoutController extends Controller
 {
@@ -15,89 +15,77 @@ class CheckoutController extends Controller
 
     public function index()
     {
-        $cart = auth()->user()->cart;
-
-        if (!$cart || $cart->items->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Votre panier est vide');
+        // Vérifier si le panier existe dans la session
+        $cart = session('cart');
+        
+        // Si le panier n'existe pas ou est vide, rediriger vers le panier
+        if (!$cart) {
+            return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
         }
 
-        return view('checkout.index', compact('cart'));
+        // Calculer le total
+        $total = collect($cart)->sum(function($item) {
+            return $item['price'] * $item['quantity'];
+        });
+
+        return view('checkout.index', [
+            'cart' => $cart,
+            'total' => $total
+        ]);
     }
 
     public function store(Request $request)
     {
-        $cart = auth()->user()->cart;
-
-        if (!$cart || $cart->items->isEmpty()) {
-            return redirect()->route('cart.index')->with('error', 'Votre panier est vide');
+        $cart = session('cart');
+        
+        if (!$cart) {
+            return redirect()->route('cart.index')->with('error', 'Votre panier est vide.');
         }
 
+        // Validation des données
         $request->validate([
-            'shipping_address' => 'required|string',
-            'shipping_city' => 'required|string',
-            'shipping_country' => 'required|string',
-            'shipping_postal_code' => 'required|string',
-            'shipping_phone' => 'required|string',
-            'payment_method' => 'required|in:card,paypal',
-            'notes' => 'nullable|string'
+            'firstname' => 'required|string|max:255',
+            'lastname' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'phone' => 'required|string|max:20',
+            'address' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'postal_code' => 'required|string|max:10',
+            'country' => 'required|string|size:2',
         ]);
 
-        $total = $cart->total;
-        $couponDiscount = 0;
+        try {
+            // Calculer le total
+            $total = collect($cart)->sum(function($item) {
+                return $item['price'] * $item['quantity'];
+            });
 
-        if (session()->has('coupon_id')) {
-            $coupon = Coupon::find(session('coupon_id'));
-            if ($coupon && $coupon->isValid()) {
-                $couponDiscount = $coupon->calculateDiscount($total);
-                $total -= $couponDiscount;
-                $coupon->increment('used_times');
-            }
-        }
-
-        $order = Order::create([
-            'user_id' => auth()->id(),
-            'order_number' => 'ORD-' . strtoupper(uniqid()),
-            'total_amount' => $total,
-            'status' => 'pending',
-            'payment_method' => $request->payment_method,
-            'payment_status' => 'pending',
-            'shipping_address' => $request->shipping_address,
-            'shipping_city' => $request->shipping_city,
-            'shipping_country' => $request->shipping_country,
-            'shipping_postal_code' => $request->shipping_postal_code,
-            'shipping_phone' => $request->shipping_phone,
-            'notes' => $request->notes
-        ]);
-
-        foreach ($cart->items as $item) {
-            $order->items()->create([
-                'product_id' => $item->product_id,
-                'quantity' => $item->quantity,
-                'price' => $item->product->current_price,
-                'size' => $item->size,
-                'color' => $item->color
+            // Créer la commande
+            $order = Order::create([
+                'user_id' => auth()->id(),
+                'total_amount' => $total,
+                'status' => 'pending',
+                'shipping_address' => json_encode([
+                    'firstname' => $request->firstname,
+                    'lastname' => $request->lastname,
+                    'email' => $request->email,
+                    'phone' => $request->phone,
+                    'address' => $request->address,
+                    'city' => $request->city,
+                    'postal_code' => $request->postal_code,
+                    'country' => $request->country,
+                ]),
             ]);
 
-            // Décrémenter le stock
-            $item->product->decrement('quantity', $item->quantity);
+            // Vider le panier
+            session()->forget('cart');
+
+            return redirect()->route('order.confirmation', $order)
+                           ->with('success', 'Votre commande a été enregistrée avec succès !');
+
+        } catch (\Exception $e) {
+            return back()->with('error', 'Une erreur est survenue lors de la création de votre commande.');
         }
-
-        // Vider le panier
-        $cart->items()->delete();
-        session()->forget('coupon_id');
-
-        // Si paiement par carte, rediriger vers la page de paiement
-        if ($request->payment_method === 'card') {
-            return redirect()->route('checkout.payment', $order);
-        }
-
-        // Si paiement PayPal, rediriger vers PayPal
-        if ($request->payment_method === 'paypal') {
-            return redirect()->route('checkout.paypal', $order);
-        }
-
-        return redirect()->route('orders.show', $order)
-            ->with('success', 'Commande passée avec succès');
     }
 
     public function payment(Order $order)

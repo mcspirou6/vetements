@@ -84,6 +84,19 @@ class Product extends Model
             : [];
     }
 
+    public function getImageAttribute()
+    {
+        if (!empty($this->images) && is_array($this->images)) {
+            return $this->images[0];
+        }
+        return null;
+    }
+
+    public function getImageUrlAttribute()
+    {
+        return $this->image ? asset('storage/' . $this->image) : asset('images/placeholder.jpg');
+    }
+
     public function getDiscountPercentageAttribute()
     {
         if ($this->sale_price && $this->price > $this->sale_price) {

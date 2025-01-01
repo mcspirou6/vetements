@@ -20,7 +20,9 @@ class ProductController extends Controller
 
     public function index()
     {
-        $products = Product::with('category')->latest()->paginate(10);
+        $products = Product::with('category')
+            ->latest()
+            ->paginate(12);
         return view('admin.products.index', compact('products'));
     }
 
@@ -72,6 +74,9 @@ class ProductController extends Controller
 
     public function edit(Product $product)
     {
+        if (is_string($product->colors)) {
+            $product->colors = json_decode($product->colors, true);
+        }
         $categories = Category::all();
         return view('admin.products.edit', compact('product', 'categories'));
     }
@@ -94,7 +99,7 @@ class ProductController extends Controller
             ]);
 
             // Gérer les images existantes
-            $images = $product->images ?? [];
+            $images = is_array($product->images) ? $product->images : [];
 
             // Gérer les nouvelles images
             if ($request->hasFile('images')) {
@@ -104,19 +109,9 @@ class ProductController extends Controller
                 }
             }
 
-            // Supprimer les images sélectionnées
-            if ($request->has('delete_images')) {
-                foreach ($request->delete_images as $index) {
-                    if (isset($images[$index])) {
-                        Storage::disk('public')->delete($images[$index]);
-                        unset($images[$index]);
-                    }
-                }
-                $images = array_values($images); // Réindexer le tableau
-            }
-
             $validatedData['images'] = $images;
-            $validatedData['slug'] = Str::slug($validatedData['name']);
+            $validatedData['sizes'] = $request->sizes ?? [];
+            $validatedData['colors'] = $request->colors ?? [];
 
             $product->update($validatedData);
 

@@ -10,7 +10,7 @@ class ShopController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::query();
+        $query = Product::with('category')->where('is_active', true);
 
         // Filtrage par catégories
         if ($request->has('categories')) {
@@ -45,26 +45,24 @@ class ShopController extends Controller
         }
 
         $products = $query->paginate(12)->withQueryString();
-        $categories = Category::all();
+        $categories = Category::where('is_active', true)->get();
 
-        return view('shop.index', compact('products', 'categories'));
+        return view('shop.index', [
+            'products' => $products,
+            'categories' => $categories,
+            'currentCategory' => null
+        ]);
     }
 
     public function search(Request $request)
     {
-        $query = Product::query();
+        $query = $request->get('q');
+        
+        $products = Product::where('name', 'like', "%{$query}%")
+            ->orWhere('description', 'like', "%{$query}%")
+            ->where('is_active', true)
+            ->paginate(12);
 
-        if ($request->has('q')) {
-            $searchTerm = $request->get('q');
-            $query->where(function($q) use ($searchTerm) {
-                $q->where('name', 'like', "%{$searchTerm}%")
-                  ->orWhere('description', 'like', "%{$searchTerm}%");
-            });
-        }
-
-        $products = $query->paginate(12)->withQueryString();
-        $categories = Category::all();
-
-        return view('shop.index', compact('products', 'categories'));
+        return view('shop.search', compact('products', 'query'));
     }
 }

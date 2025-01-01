@@ -57,9 +57,9 @@
             <span>Voir le site</span>
         </a>
 
-        <form method="POST" action="{{ route('logout') }}">
+        <form method="POST" action="{{ route('logout') }}" class="mt-2">
             @csrf
-            <button type="submit" class="nav-link text-white-50">
+            <button type="submit" class="nav-link text-white-50 w-100 text-start border-0 bg-transparent">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Déconnexion</span>
             </button>

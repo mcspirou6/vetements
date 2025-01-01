@@ -37,6 +37,11 @@
                                              alt="{{ $details['name'] }}" 
                                              class="img-thumbnail me-3"
                                              style="width: 50px; height: 50px; object-fit: cover;">
+                                    @else
+                                        <div class="bg-light d-flex align-items-center justify-content-center me-3" 
+                                             style="width: 50px; height: 50px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
                                     @endif
                                     <div>
                                         <h6 class="mb-0">{{ $details['name'] }}</h6>
