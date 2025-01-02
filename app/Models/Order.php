@@ -46,6 +46,57 @@ class Order extends Model
         return $this->created_at->format('d/m/Y H:i');
     }
 
+    public function getStatusLabelAttribute()
+    {
+        return match($this->status) {
+            'pending' => 'En attente',
+            'processing' => 'En traitement',
+            'shipped' => 'Expédiée',
+            'delivered' => 'Livrée',
+            'cancelled' => 'Annulée',
+            default => ucfirst($this->status),
+        };
+    }
+
+    public function getStatusColorAttribute()
+    {
+        return match($this->status) {
+            'pending' => 'warning',
+            'processing' => 'info',
+            'shipped' => 'primary',
+            'delivered' => 'success',
+            'cancelled' => 'danger',
+            default => 'secondary',
+        };
+    }
+
+    public function getPaymentStatusLabelAttribute()
+    {
+        return match($this->payment_status) {
+            'pending' => 'En attente',
+            'completed' => 'Payé',
+            'failed' => 'Échoué',
+            'refunded' => 'Remboursé',
+            default => ucfirst($this->payment_status),
+        };
+    }
+
+    public function getPaymentStatusColorAttribute()
+    {
+        return match($this->payment_status) {
+            'pending' => 'warning',
+            'completed' => 'success',
+            'failed' => 'danger',
+            'refunded' => 'info',
+            default => 'secondary',
+        };
+    }
+
+    public function getOrderNumberAttribute()
+    {
+        return str_pad($this->id, 6, '0', STR_PAD_LEFT);
+    }
+
     public function scopePending($query)
     {
         return $query->where('status', 'pending');

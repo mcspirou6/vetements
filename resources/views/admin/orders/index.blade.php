@@ -32,7 +32,7 @@
                     <tbody>
                         @forelse($orders as $order)
                             <tr>
-                                <td>{{ $order->number }}</td>
+                                <td>#{{ $order->order_number }}</td>
                                 <td>{{ $order->user->name }}</td>
                                 <td>{{ number_format($order->total_amount, 2, ',', ' ') }} €</td>
                                 <td>

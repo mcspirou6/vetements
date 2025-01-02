@@ -77,10 +77,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/orders/{order}/invoice', [OrderController::class, 'invoice'])->name('orders.invoice');
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
-    // Checkout
+    // Checkout et paiement
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/payment/{order}', [CheckoutController::class, 'payment'])->name('checkout.payment');
+    Route::post('/checkout/payment/{order}', [CheckoutController::class, 'processPayment'])->name('checkout.process-payment');
     Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
+    
+    // Routes PayPal
+    Route::get('/checkout/paypal/success/{order}', [CheckoutController::class, 'paypalSuccess'])->name('checkout.paypal.success');
+    Route::get('/checkout/paypal/cancel/{order}', [CheckoutController::class, 'paypalCancel'])->name('checkout.paypal.cancel');
+    Route::post('/checkout/paypal/notify/{order}', [CheckoutController::class, 'paypalNotify'])->name('checkout.paypal.notify');
 
     // Routes du compte utilisateur
     Route::prefix('account')->name('account.')->group(function () {

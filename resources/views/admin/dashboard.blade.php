@@ -102,10 +102,11 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <th>Numéro</th>
                                     <th>Client</th>
                                     <th>Montant</th>
                                     <th>Statut</th>
+                                    <th>Paiement</th>
                                     <th>Date</th>
                                     <th>Actions</th>
                                 </tr>
@@ -113,19 +114,40 @@
                             <tbody>
                                 @foreach($recentOrders as $order)
                                 <tr>
-                                    <td>#{{ $order->id }}</td>
-                                    <td>{{ $order->user->full_name }}</td>
+                                    <td>#{{ $order->order_number }}</td>
+                                    <td>{{ $order->user->name }}</td>
                                     <td>{{ number_format($order->total_amount, 2) }} €</td>
                                     <td>
                                         <span class="badge bg-{{ $order->status_color }}">
-                                            {{ $order->status }}
+                                            {{ $order->status_label }}
                                         </span>
                                     </td>
-                                    <td>{{ $order->created_at->format('d/m/Y H:i') }}</td>
                                     <td>
-                                        <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
+                                        <span class="badge bg-{{ $order->payment_status_color }}">
+                                            {{ $order->payment_status_label }}
+                                        </span>
+                                    </td>
+                                    <td>{{ $order->formatted_date }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <form action="{{ route('admin.orders.status', $order) }}" method="POST" class="d-flex gap-2">
+                                                @csrf
+                                                @method('PATCH')
+                                                <select name="status" class="form-select form-select-sm" style="width: 130px;">
+                                                    <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>En attente</option>
+                                                    <option value="processing" {{ $order->status === 'processing' ? 'selected' : '' }}>En traitement</option>
+                                                    <option value="shipped" {{ $order->status === 'shipped' ? 'selected' : '' }}>Expédiée</option>
+                                                    <option value="delivered" {{ $order->status === 'delivered' ? 'selected' : '' }}>Livrée</option>
+                                                    <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Annulée</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-save"></i>
+                                                </button>
+                                            </form>
+                                            <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 @endforeach

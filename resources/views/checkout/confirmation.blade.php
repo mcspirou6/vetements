@@ -172,3 +172,45 @@
     </div>
 </div>
 @endsection
+                                    <h4 class="font-medium text-gray-900">Carte bancaire</h4>
+                                    <p class="text-sm text-gray-500">Paiement sécurisé via Stripe</p>
+                                </div>
+                            </div>
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Payer
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Option PayPal -->
+                    <div class="payment-option bg-white border rounded-lg p-4 cursor-pointer hover:border-blue-500">
+                        <form action="{{ route('checkout.paypal', $order) }}" method="POST" class="flex items-center justify-between">
+                            @csrf
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-shrink-0">
+                                    <img src="{{ asset('images/paypal.png') }}" alt="PayPal" class="h-8 w-auto">
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-900">PayPal</h4>
+                                    <p class="text-sm text-gray-500">Paiement sécurisé via PayPal</p>
+                                </div>
+                            </div>
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                PayPal
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Aide et support -->
+        <div class="text-center">
+            <p class="text-gray-600">
+                Une question ? Besoin d'aide ?
+                <a href="#" class="text-indigo-600 hover:text-indigo-500">Contactez notre support</a>
+            </p>
+        </div>
+    </div>
+</div>
+@endsection
