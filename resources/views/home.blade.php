@@ -15,7 +15,7 @@
                 </a>
             </div>
             <div class="col-lg-6">
-                <img src="https://via.placeholder.com/600x400" alt="Collection" class="img-fluid rounded-3 shadow">
+                <img src="https://i.pinimg.com/736x/1f/6d/36/1f6d36f9e10dbbc5dd02118de7c6666e.jpg" alt="Collection" class="img-fluid rounded-3 shadow">
             </div>
         </div>
     </div>
